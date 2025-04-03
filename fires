@@ -1,0 +1,5 @@
+local Flame = game:GetService("Workspace").Map.Outside.Houses.House_1.Inside.Reactors.Fireplace.Fire.Flame
+
+local Light = game:GetService("Workspace").Map.Outside.Houses.House_1.Inside.Reactors.Fireplace.Fire.PointLight
+
+local Sounds = game:GetService("Workspace").Map.Outside.Houses.House_1.Inside.Reactors.Fireplace.Fire.Ambience
