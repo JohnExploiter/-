@@ -1,0 +1,361 @@
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/astraln/SentinelUILIB/main/UI.lua', true))()
+
+local window = Library:Window('FPE Admin Panel V5')
+
+local tab = window:Tab('Regular Admin')
+local tab2 = window:Tab('Owner Admin')
+local tab3 = window:Tab('248’s scripts')
+
+-- Rainbow Tag
+tab:Label("Rainbows")
+tab:Button("Rainbow Tag", function()
+    local TweenService = game:GetService("TweenService")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+
+    local player = Players.LocalPlayer
+    local head = player.Character:WaitForChild("Head")
+    local roleName = head:WaitForChild("Nametag"):WaitForChild("Roleplay_Name")
+
+    local function getRainbowColor(t)
+        return Color3.fromHSV(t % 1, 1, 1)
+    end
+
+    local function cycleRainbowColors()
+        while true do
+            for i = 0, 1, 0.05 do
+                local rainbowColor = getRainbowColor(i)
+                local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut)
+
+                local tween = TweenService:Create(roleName, tweenInfo, {TextColor3 = rainbowColor})
+                tween:Play()
+
+                ReplicatedStorage:WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer("Text", "Change_Color", roleName, rainbowColor, "Role_Color")
+
+                wait(0.2)
+            end
+        end
+    end
+
+    cycleRainbowColors()
+end)
+
+-- Rainbow Potion
+tab:Button("Rainbow Potion", function()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local Players = game:GetService("Players")
+
+    local function getRainbowColor(t)
+        return Color3.fromHSV(t % 1, 1, 1)
+    end
+
+    while true do
+        local hue = tick() * 0.1
+        local rainbowColor = getRainbowColor(hue)
+
+        local args = {
+            [1] = "Science_Bottle",
+            [2] = Players.LocalPlayer.Character.Science_Bottle,
+            [3] = Players.LocalPlayer:WaitForChild("Player_Settings"),
+            [4] = rainbowColor
+        }
+
+        ReplicatedStorage:WaitForChild("Events"):WaitForChild("Tools"):FireServer(unpack(args))
+        wait(0.1)
+    end
+end)
+
+-- Throwing Items
+tab:Label("Seperator-Flow")
+local function throwItem(itemName)
+    while true do
+        local args = {
+            [1] = "Throw_Prop",
+            [2] = game:GetService("Players").LocalPlayer.Character[itemName],
+            [3] = 180,
+            [4] = 0.5,
+            [5] = 5
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer(unpack(args))
+        wait(0)
+    end
+end
+
+tab:Button("Water", function() throwItem("Water_Bottle") end)
+tab:Button("Cola", function() throwItem("Soda_Can") end)
+tab:Button("Ball", function() throwItem("Paper_Ball") end)
+tab:Button("Plane", function() throwItem("Paper_Plane") end)
+
+-- Sound Effects
+tab:Label("Seperator-Sounds")
+local function playSound(itemName, soundName)
+    while true do
+        local args = {
+            [1] = itemName,
+            [2] = game:GetService("Players").LocalPlayer.Character[itemName],
+            [3] = game:GetService("ReplicatedStorage"):WaitForChild("Sounds"):WaitForChild("Tools"):WaitForChild(soundName)
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Tools"):FireServer(unpack(args))
+        wait(0)
+    end
+end
+
+tab:Button("Ruler", function() playSound("Ruler", "Ruler") end)
+tab:Button("Knife", function() playSound("Knife", "Knife_Swing") end)
+tab:Button("Soap", function() playSound("Soap", "Eat") end)
+tab:Button("Oreo", function() playSound("Oreo", "Eat") end)
+tab:Button("Phone", function() playSound("Mobile", "Mobile_Notification") end)
+
+tab3:Label("Ragdolls")
+
+-- Ragdoll GUI
+tab3:Button("Ragdoll Player GUI", function()
+    local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/bacon"))()
+    local version, changelog = lib:GetInfo()
+    local window = lib:CreateWindow("BaconLib v" .. version)
+
+    local textBox = lib:CreateTextBox(window, Enum.Font.Legacy, "Text", "Enter Player Name")
+    local button = lib:CreateButton(window, "Ragdoll Player", function()
+        local targetPlayerName = textBox.Text
+        local targetPlayer = game:GetService("Players"):FindFirstChild(targetPlayerName)
+
+        if targetPlayer then
+            local args = {
+                [1] = "Death",
+                [2] = workspace:WaitForChild("Players"):WaitForChild(targetPlayer.Name),
+                [3] = targetPlayer.Character and targetPlayer.Character:FindFirstChild("Character_Settings")
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer(unpack(args))
+        else
+            warn("Player not found!")
+        end
+    end)
+end)
+
+-- Toggle for Giving All Players Cookies
+local giveCookiesEnabled = false
+
+tab2:Toggle('Give all Cookies?', false, function(state)
+    giveCookiesEnabled = state
+
+    if giveCookiesEnabled then
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local Players = game:GetService("Players")
+        local tool = ReplicatedStorage:WaitForChild("Tools"):WaitForChild("Oreo")
+        local event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Core_Replication")
+
+        spawn(function()
+            while giveCookiesEnabled do
+                for _, player in pairs(Players:GetPlayers()) do
+                    if player and player:FindFirstChild("Backpack") then
+                        local args = {
+                            [1] = "Tools",
+                            [2] = "Add",
+                            [3] = tool,
+                            [4] = player.Backpack
+                        }
+                        event:FireServer(unpack(args))
+                    end
+                end
+                wait(0) -- Small delay to prevent excessive calls
+            end
+        end)
+    end
+end)
+
+tab3:Button("Ragdoll All Players", function()
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Event = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Core_Replication")
+
+local localPlayer = Players.LocalPlayer
+
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= localPlayer and player.Character then
+        if not localPlayer:IsFriendsWith(player.UserId) then
+            local args = {
+                [1] = "Death",
+                [2] = player.Character,
+                [3] = player.Character:FindFirstChild("Character_Settings")
+            }
+            Event:FireServer(unpack(args))
+        end
+    end
+end
+end)
+
+tab3:Label("Rainbow - All")
+
+tab3:Button("Rainbow Tag - All", function()
+
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+-- Define the rainbow colors as a sequence of HSV values (smooth transition)
+local rainbowColors = {
+    Color3.fromHSV(0, 1, 1),    -- Red
+    Color3.fromHSV(1/6, 1, 1),  -- Orange
+    Color3.fromHSV(2/6, 1, 1),  -- Yellow
+    Color3.fromHSV(3/6, 1, 1),  -- Green
+    Color3.fromHSV(4/6, 1, 1),  -- Blue
+    Color3.fromHSV(5/6, 1, 1),  -- Indigo
+    Color3.fromHSV(1, 1, 1)     -- Violet
+}
+
+-- Function to create and play a smooth transition tween for color change
+local function smoothTransitionColor(roleName, fromColor, toColor, duration)
+    if not roleName then return end -- Ensure the nametag exists
+
+    local tweenInfo = TweenInfo.new(
+        duration,                    -- Duration of the tween
+        Enum.EasingStyle.Linear,      -- Easing style for smooth transition
+        Enum.EasingDirection.InOut,   -- Easing direction for smooth transition
+        0,                            -- No repeat count
+        false                         -- Don't reverse the tween
+    )
+
+    -- Goal for the tween (the final color to reach)
+    local goal = {TextColor3 = toColor}
+
+    -- Create the tween for the role name (targeting TextColor3 of the Nametag)
+    local tween = TweenService:Create(roleName, tweenInfo, goal)
+
+    -- Play the tween
+    tween:Play()
+
+    -- Fire the server event to replicate color changes across all clients
+    local args = {
+        [1] = "Text",
+        [2] = "Change_Color",
+        [3] = roleName,
+        [4] = toColor,
+        [5] = "Role_Color"
+    }
+    ReplicatedStorage:WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer(unpack(args))
+end
+
+-- Function to apply the rainbow effect to a single player
+local function applyRainbowEffectToPlayer(player)
+    local character = player.Character or player.CharacterAdded:Wait()
+    local head = character:FindFirstChild("Head")
+    if not head then return end
+
+    local roleName = head:FindFirstChild("Nametag") and head.Nametag:FindFirstChild("Roleplay_Name")
+    if not roleName then return end
+
+    -- Continuously cycle through rainbow colors
+    while true do
+        for i = 1, #rainbowColors - 1 do
+            local currentColor = rainbowColors[i]
+            local nextColor = rainbowColors[i + 1]
+
+            -- Smoothly transition between the two colors
+            smoothTransitionColor(roleName, currentColor, nextColor, 2)
+
+            -- Wait until the transition is finished before continuing
+            wait(2)
+        end
+    end
+end
+
+-- Apply the rainbow effect to all players currently in the game
+for _, player in pairs(Players:GetPlayers()) do
+    task.spawn(function()
+        applyRainbowEffectToPlayer(player)
+    end)
+end
+
+-- Apply the rainbow effect to new players who join
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        task.spawn(function()
+            applyRainbowEffectToPlayer(player)
+        end)
+    end)
+end)
+end)
+
+tab3:Button("Give all Potion & Rnbw Potion - All", function()
+
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local players = game:GetService("Players")
+local coreReplicationEvent = replicatedStorage:WaitForChild("Events"):WaitForChild("Core_Replication")
+local tool = replicatedStorage:WaitForChild("Tools"):WaitForChild("Science_Bottle")
+
+for _, player in pairs(players:GetPlayers()) do
+    if player and player:FindFirstChild("Backpack") then
+        local args = {
+            [1] = "Tools",
+            [2] = "Add",
+            [3] = tool,
+            [4] = player.Backpack
+        }
+        coreReplicationEvent:FireServer(unpack(args))
+    end
+end
+end)
+
+local interacting = false  -- Variable to track toggle state
+
+tab3:Toggle("Interact All Houses", false, function(state)
+    interacting = state  -- Set the state based on toggle
+    if interacting then
+        while interacting do
+            for i = 1, 7 do  -- Loop through all houses
+                if not interacting then break end  -- Stop looping if toggle is off
+                
+                -- Define the base path for each house
+                local housePath = workspace:WaitForChild("Map"):WaitForChild("Outside"):WaitForChild("Houses"):WaitForChild("House_"..i)
+
+                -- Interact with the house (if it has an interaction event)
+                local interactEvent = housePath:FindFirstChild("Interact")
+                if interactEvent and interactEvent:IsA("RemoteEvent") then
+                    interactEvent:FireServer()  -- Trigger interaction
+                end
+
+                -- Toggle 1st floor light
+                local args1 = {
+                    [1] = "Toggle_Light",
+                    [2] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("1F_Switch"):WaitForChild("Trigger"),
+                    [3] = 0,
+                    [4] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("1F_Switch"):WaitForChild("Switch"),
+                    [5] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("1F_Light"),
+                    [6] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("1F_Decor_Light"),
+                    [7] = housePath:WaitForChild("Outside"):WaitForChild("House"):WaitForChild("Fade"):WaitForChild("Decal")
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer(unpack(args1))
+
+                -- Toggle 2nd floor light
+                local args2 = {
+                    [1] = "Toggle_Light",
+                    [2] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("2F_Switch"):WaitForChild("Trigger"),
+                    [3] = 0,
+                    [4] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("2F_Switch"):WaitForChild("Switch"),
+                    [5] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("2F_Light"),
+                    [6] = housePath:WaitForChild("Inside"):WaitForChild("Reactors"):WaitForChild("2F_Decor_Light"),
+                    [7] = housePath:WaitForChild("Outside"):WaitForChild("House"):WaitForChild("Window")
+                }
+                game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Core_Replication"):FireServer(unpack(args2))
+
+                wait(0.5)  -- Prevent excessive requests
+            end
+        end
+    end
+end)
+
+
+-- Additional UI Elements
+tab:Label("Label")
+tab:Keybind("Keybind", Enum.KeyCode.E, function() end)
+
+local dropdown = tab:Dropdown("Dropdown", {"1", "2", "3", "4", "5", "6", "7", "8"}, function(item)
+    print(item)
+end)
+
+tab:Button('Refresh', function()
+    dropdown:RefreshDropdown({'69'})
+end)
+
+tab:Slider("Slider", 16, 1000, 16, function() end)
